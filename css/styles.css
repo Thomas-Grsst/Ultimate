@@ -212,6 +212,7 @@ main { max-width: 720px; margin: 0 auto; padding: 18px; }
 
 /* ---------- Modale ---------- */
 .modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); padding: 20px; }
+.modal[hidden] { display: none; }   /* sinon .modal écrase l'attribut hidden */
 .modal-card { position: relative; width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 26px; box-shadow: var(--shadow); }
 .modal-card h2 { margin-bottom: 6px; }
 .modal-card input { width: 100%; background: var(--bg-2); border: 1px solid var(--line); color: var(--txt); padding: 12px; border-radius: 12px; margin: 16px 0 12px; font-size: 0.95rem; }
