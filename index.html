@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>Ultimate — Développement personnel</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://esm.sh" />
+</head>
+<body>
+  <!-- Barre du haut -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span> Ultimate
+    </div>
+    <div class="account" id="account">
+      <button class="btn-ghost" id="authBtn">Se connecter</button>
+    </div>
+  </header>
+
+  <!-- Contenu des onglets -->
+  <main id="views">
+
+    <!-- ===== SCROLL ===== -->
+    <section class="view" id="view-scroll" data-view="scroll">
+      <div class="view-head">
+        <h1>Scroll utile</h1>
+        <p class="muted">Remplace le scroll Instagram par de l'info qui nourrit.</p>
+      </div>
+      <div class="chips" id="feedChips">
+        <button class="chip is-active" data-cat="all">Tout</button>
+        <button class="chip" data-cat="ai">IA</button>
+        <button class="chip" data-cat="finance">Finance & Trading</button>
+        <button class="chip" data-cat="quantum">Quantique</button>
+        <button class="chip" data-cat="discovery">Découvertes & Tech</button>
+      </div>
+      <div class="feed" id="feed"></div>
+    </section>
+
+    <!-- ===== TÂCHES ===== -->
+    <section class="view" id="view-tasks" data-view="tasks" hidden>
+      <div class="view-head">
+        <h1>Tâches de la semaine</h1>
+        <p class="muted">Tâches récurrentes par jour. Coche au fil de la journée.</p>
+      </div>
+      <div class="week" id="week"></div>
+    </section>
+
+    <!-- ===== STREAK ===== -->
+    <section class="view" id="view-streak" data-view="streak" hidden>
+      <div class="view-head">
+        <h1>Ma streak</h1>
+        <p class="muted">Depuis combien de temps je tiens.</p>
+      </div>
+      <div class="streak-wrap">
+        <div class="sphere" id="sphere">
+          <div class="sphere-glow"></div>
+          <div class="sphere-core">
+            <div class="streak-days" id="streakDays">0</div>
+            <div class="streak-label">jours</div>
+          </div>
+        </div>
+        <div class="streak-timer" id="streakTimer">00j 00h 00m 00s</div>
+        <div class="streak-stats">
+          <div class="stat">
+            <div class="stat-num" id="streakBest">0</div>
+            <div class="stat-lbl">Record (jours)</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num" id="streakStart">—</div>
+            <div class="stat-lbl">Début</div>
+          </div>
+        </div>
+        <button class="btn-danger" id="resetStreak">J'ai rechuté — réinitialiser</button>
+      </div>
+    </section>
+
+    <!-- ===== MUSCU ===== -->
+    <section class="view" id="view-gym" data-view="gym" hidden>
+      <div class="view-head">
+        <h1>Muscu</h1>
+        <p class="muted">Ta séance par jour. Les mêmes exos reviennent chaque semaine.</p>
+      </div>
+      <div class="day-tabs" id="gymDayTabs"></div>
+      <div class="gym-panel" id="gymPanel"></div>
+    </section>
+
+  </main>
+
+  <!-- Navigation basse -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tab is-active" data-view="scroll">
+      <span class="ico">✦</span><span>Scroll</span>
+    </button>
+    <button class="tab" data-view="tasks">
+      <span class="ico">▦</span><span>Tâches</span>
+    </button>
+    <button class="tab" data-view="streak">
+      <span class="ico">◉</span><span>Streak</span>
+    </button>
+    <button class="tab" data-view="gym">
+      <span class="ico">▲</span><span>Muscu</span>
+    </button>
+  </nav>
+
+  <!-- Modale de connexion -->
+  <div class="modal" id="authModal" hidden>
+    <div class="modal-card">
+      <button class="modal-close" id="authClose">×</button>
+      <h2>Connexion</h2>
+      <p class="muted" id="authHint">Reçois un lien magique par email pour synchroniser tes données sur tous tes appareils.</p>
+      <input type="email" id="authEmail" placeholder="ton@email.com" autocomplete="email" />
+      <button class="btn-primary" id="authSend">Recevoir le lien</button>
+      <p class="auth-msg" id="authMsg"></p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
