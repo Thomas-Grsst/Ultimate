@@ -7,6 +7,7 @@ import { toast } from "./ui.js";
 
 import { initFeed } from "./feed.js";
 import { initTasks, refreshTasks } from "./tasks.js";
+import { initGoals, refreshGoals } from "./goals.js";
 import { initStreak, refreshStreak } from "./streak.js";
 import { initGym, refreshGym } from "./gym.js";
 
@@ -27,11 +28,13 @@ document.getElementById("tabbar").addEventListener("click", (e) => {
 // ---------- Init des modules ----------
 initFeed();
 initTasks();
+initGoals();
 initStreak();
 initGym();
 
 function refreshData() {
   refreshTasks();
+  refreshGoals();
   refreshStreak();
   refreshGym();
 }

@@ -27,27 +27,26 @@ export async function listTasks() {
   if (useCloud()) {
     const { data, error } = await supabase
       .from("tasks").select("*")
-      .order("day_of_week", { ascending: true })
-      .order("position", { ascending: true });
+      .order("position", { ascending: true })
+      .order("created_at", { ascending: true });
     if (error) throw error;
     return data;
   }
-  return lsGet("ult_tasks", []).sort(
-    (a, b) => a.day_of_week - b.day_of_week || a.position - b.position
-  );
+  return lsGet("ult_tasks", []).sort((a, b) => a.position - b.position);
 }
 
-export async function addTask({ day_of_week, title, position }) {
+export async function addTask({ title, position }) {
+  const checks = [false, false, false, false, false, false, false];
   if (useCloud()) {
     const { data, error } = await supabase
       .from("tasks")
-      .insert({ user_id: currentUser.id, day_of_week, title, position })
+      .insert({ user_id: currentUser.id, title, position, checks })
       .select().single();
     if (error) throw error;
     return data;
   }
   const tasks = lsGet("ult_tasks", []);
-  const t = { id: uid(), day_of_week, title, done: false, position };
+  const t = { id: uid(), title, position, checks };
   tasks.push(t); lsSet("ult_tasks", tasks);
   return t;
 }
@@ -149,4 +148,54 @@ export async function deleteWorkout(id) {
     return;
   }
   lsSet("ult_workouts", lsGet("ult_workouts", []).filter((w) => w.id !== id));
+}
+
+// ============================================================
+//  OBJECTIFS (horizon : 'short' | 'mid' | 'long')
+// ============================================================
+export async function listGoals() {
+  if (useCloud()) {
+    const { data, error } = await supabase
+      .from("goals").select("*")
+      .order("position", { ascending: true })
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return data;
+  }
+  return lsGet("ult_goals", []).sort((a, b) => a.position - b.position);
+}
+
+export async function addGoal({ horizon, title, position }) {
+  if (useCloud()) {
+    const { data, error } = await supabase
+      .from("goals")
+      .insert({ user_id: currentUser.id, horizon, title, position })
+      .select().single();
+    if (error) throw error;
+    return data;
+  }
+  const goals = lsGet("ult_goals", []);
+  const g = { id: uid(), horizon, title, done: false, position };
+  goals.push(g); lsSet("ult_goals", goals);
+  return g;
+}
+
+export async function updateGoal(id, patch) {
+  if (useCloud()) {
+    const { error } = await supabase.from("goals").update(patch).eq("id", id);
+    if (error) throw error;
+    return;
+  }
+  const goals = lsGet("ult_goals", []);
+  const i = goals.findIndex((g) => g.id === id);
+  if (i > -1) { goals[i] = { ...goals[i], ...patch }; lsSet("ult_goals", goals); }
+}
+
+export async function deleteGoal(id) {
+  if (useCloud()) {
+    const { error } = await supabase.from("goals").delete().eq("id", id);
+    if (error) throw error;
+    return;
+  }
+  lsSet("ult_goals", lsGet("ult_goals", []).filter((g) => g.id !== id));
 }

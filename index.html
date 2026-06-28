@@ -42,9 +42,15 @@
     <section class="view" id="view-tasks" data-view="tasks" hidden>
       <div class="view-head">
         <h1>Tâches de la semaine</h1>
-        <p class="muted">Tâches récurrentes par jour. Coche au fil de la journée.</p>
+        <p class="muted">Une ligne par tâche, coche le jour où tu l'as faite.</p>
       </div>
-      <div class="week" id="week"></div>
+      <div class="matrix">
+        <div class="matrix-grid" id="taskGrid"></div>
+        <div class="matrix-add">
+          <input type="text" id="taskAdd" placeholder="Nouvelle tâche…" />
+          <button class="add-btn" id="taskAddBtn">+</button>
+        </div>
+      </div>
     </section>
 
     <!-- ===== STREAK ===== -->
@@ -76,6 +82,15 @@
       </div>
     </section>
 
+    <!-- ===== OBJECTIFS ===== -->
+    <section class="view" id="view-goals" data-view="goals" hidden>
+      <div class="view-head">
+        <h1>Objectifs</h1>
+        <p class="muted">Court, moyen et long terme. Coche ce qui est atteint.</p>
+      </div>
+      <div class="goals" id="goalsBoard"></div>
+    </section>
+
     <!-- ===== MUSCU ===== -->
     <section class="view" id="view-gym" data-view="gym" hidden>
       <div class="view-head">
@@ -95,6 +110,9 @@
     </button>
     <button class="tab" data-view="tasks">
       <span class="ico">▦</span><span>Tâches</span>
+    </button>
+    <button class="tab" data-view="goals">
+      <span class="ico">★</span><span>Objectifs</span>
     </button>
     <button class="tab" data-view="streak">
       <span class="ico">◉</span><span>Streak</span>

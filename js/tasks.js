@@ -1,41 +1,65 @@
 // ============================================================
-//  ONGLET TÂCHES — calendrier hebdo L M M J V S D
-//  Tâches récurrentes par jour de semaine.
+//  ONGLET TÂCHES — matrice
+//  Lignes = tâches, colonnes = L M M J V S D, cases à cocher.
 // ============================================================
-import { DAYS, todayIndex, toast, esc } from "./ui.js";
+import { DAYS_SHORT, todayIndex, toast, esc } from "./ui.js";
 import { listTasks, addTask, updateTask, deleteTask } from "./store.js";
 
 let tasks = [];
+let saveTimers = {};
 
-function byDay(d) {
-  return tasks.filter((t) => t.day_of_week === d).sort((a, b) => a.position - b.position);
-}
+const checksOf = (t) =>
+  Array.isArray(t.checks) && t.checks.length === 7
+    ? t.checks
+    : [false, false, false, false, false, false, false];
 
 function render() {
-  const week = document.getElementById("week");
+  const grid = document.getElementById("taskGrid");
   const today = todayIndex();
-  week.innerHTML = DAYS.map((name, d) => {
-    const list = byDay(d);
-    const rows = list.length
-      ? list.map((t) => `
-        <div class="task-row" data-id="${t.id}">
-          <button class="task-check ${t.done ? "done" : ""}" data-act="toggle">✓</button>
-          <span class="task-text ${t.done ? "done" : ""}">${esc(t.title)}</span>
-          <button class="task-del" data-act="del" title="Supprimer">×</button>
-        </div>`).join("")
-      : `<div class="muted" style="padding:4px 0;">Aucune tâche.</div>`;
-    return `
-      <div class="day-card ${d === today ? "is-today" : ""}" data-day="${d}">
-        <div class="day-head">
-          <span class="day-name">${name} ${d === today ? '<span class="day-badge">Aujourd\'hui</span>' : ""}</span>
-        </div>
-        ${rows}
-        <div class="add-row">
-          <input type="text" placeholder="Nouvelle tâche…" data-add="${d}" />
-          <button class="add-btn" data-addbtn="${d}">+</button>
-        </div>
-      </div>`;
-  }).join("");
+
+  // En-tête : coin vide + 7 jours
+  let html = `<div class="mx-corner"></div>`;
+  html += DAYS_SHORT.map(
+    (s, d) => `<div class="mx-day ${d === today ? "is-today" : ""}">${s}</div>`
+  ).join("");
+
+  // Une ligne par tâche
+  if (!tasks.length) {
+    html += `<div class="mx-empty">Aucune tâche. Ajoute-en une ci-dessous.</div>`;
+  } else {
+    for (const t of tasks) {
+      const c = checksOf(t);
+      html += `
+        <div class="mx-label" data-id="${t.id}">
+          <input class="mx-title" value="${esc(t.title)}" data-id="${t.id}" />
+          <button class="mx-del" data-del="${t.id}" title="Supprimer">×</button>
+        </div>`;
+      html += c
+        .map(
+          (done, d) =>
+            `<button class="mx-check ${done ? "done" : ""} ${d === today ? "col-today" : ""}" data-id="${t.id}" data-day="${d}">✓</button>`
+        )
+        .join("");
+    }
+  }
+  grid.innerHTML = html;
+}
+
+function scheduleTitleSave(id, title) {
+  const t = tasks.find((x) => x.id === id);
+  if (t) t.title = title;
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(() => updateTask(id, { title }), 500);
+}
+
+async function onAdd() {
+  const input = document.getElementById("taskAdd");
+  const title = input.value.trim();
+  if (!title) return;
+  const t = await addTask({ title, position: tasks.length });
+  tasks.push(t);
+  input.value = "";
+  render();
 }
 
 async function reload() {
@@ -43,53 +67,48 @@ async function reload() {
   render();
 }
 
-async function onAdd(day) {
-  const input = document.querySelector(`input[data-add="${day}"]`);
-  const title = input.value.trim();
-  if (!title) return;
-  const position = byDay(day).length;
-  const t = await addTask({ day_of_week: day, title, position });
-  tasks.push(t);
-  render();
-  // remet le focus sur le bon champ
-  const fresh = document.querySelector(`input[data-add="${day}"]`);
-  if (fresh) fresh.focus();
-}
-
 export function initTasks() {
-  const week = document.getElementById("week");
+  const grid = document.getElementById("taskGrid");
 
-  week.addEventListener("click", async (e) => {
-    const addBtn = e.target.closest("[data-addbtn]");
-    if (addBtn) return onAdd(Number(addBtn.dataset.addbtn));
-
-    const row = e.target.closest(".task-row");
-    const act = e.target.closest("[data-act]");
-    if (!row || !act) return;
-    const id = row.dataset.id;
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-
-    if (act.dataset.act === "toggle") {
-      task.done = !task.done;
+  // cocher / décocher une case + suppression
+  grid.addEventListener("click", async (e) => {
+    const check = e.target.closest(".mx-check");
+    if (check) {
+      const id = check.dataset.id;
+      const day = Number(check.dataset.day);
+      const t = tasks.find((x) => x.id === id);
+      if (!t) return;
+      const checks = checksOf(t).slice();
+      checks[day] = !checks[day];
+      t.checks = checks;
       render();
-      await updateTask(id, { done: task.done });
-    } else if (act.dataset.act === "del") {
-      tasks = tasks.filter((t) => t.id !== id);
+      await updateTask(id, { checks });
+      return;
+    }
+    const del = e.target.closest("[data-del]");
+    if (del) {
+      const id = del.dataset.del;
+      tasks = tasks.filter((x) => x.id !== id);
       render();
       await deleteTask(id);
       toast("Tâche supprimée");
     }
   });
 
-  week.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && e.target.matches("[data-add]")) {
-      onAdd(Number(e.target.dataset.add));
+  // modifier le libellé
+  grid.addEventListener("input", (e) => {
+    if (e.target.classList.contains("mx-title")) {
+      scheduleTitleSave(e.target.dataset.id, e.target.value);
     }
+  });
+
+  // ajout
+  document.getElementById("taskAddBtn").addEventListener("click", onAdd);
+  document.getElementById("taskAdd").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") onAdd();
   });
 
   reload();
 }
 
-// Rechargé quand l'utilisateur se connecte / déconnecte
 export const refreshTasks = reload;
