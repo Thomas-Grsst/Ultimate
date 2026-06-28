@@ -85,8 +85,40 @@ document.getElementById("authSend").addEventListener("click", async () => {
   }
 });
 
+// ---------- Récupération après clic sur le lien magique ----------
+async function handleAuthRedirect() {
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  const query = new URLSearchParams(window.location.search);
+
+  // 1) Erreur renvoyée par Supabase (lien expiré, déjà utilisé, pré-ouvert par un scanner…)
+  const errDesc = hash.get("error_description") || query.get("error_description");
+  if (errDesc) {
+    const msg = decodeURIComponent(errDesc).replace(/\+/g, " ");
+    openModal();
+    authMsg.textContent = "Échec du lien : " + msg + " — redemande un nouveau lien.";
+    authMsg.className = "auth-msg err";
+    history.replaceState(null, "", window.location.pathname);
+    return;
+  }
+
+  // 2) Flux PKCE : un code à échanger contre une session
+  if (query.get("code")) {
+    const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+    if (error) { openModal(); authMsg.textContent = "Erreur : " + error.message; authMsg.className = "auth-msg err"; }
+    history.replaceState(null, "", window.location.pathname);
+    return;
+  }
+
+  // 3) Flux implicite : tokens dans le hash → laisse supabase-js les lire puis nettoie l'URL
+  if (hash.get("access_token")) {
+    await supabase.auth.getSession();
+    history.replaceState(null, "", window.location.pathname);
+  }
+}
+
 // ---------- État de session ----------
 if (SUPABASE_ENABLED) {
+  handleAuthRedirect();
   supabase.auth.getSession().then(({ data }) => {
     const user = data?.session?.user || null;
     setUser(user);
