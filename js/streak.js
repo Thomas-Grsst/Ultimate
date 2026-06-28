@@ -19,6 +19,22 @@ function fmt(sec) {
   return `${p(d)}j ${p(h)}h ${p(m)}m ${p(s)}s`;
 }
 
+// Paliers de la sphère : seuil en jours + nom de niveau
+const LEVELS = [
+  { min: 0,   name: "Étincelle" },
+  { min: 3,   name: "Braise" },
+  { min: 7,   name: "Flux" },
+  { min: 14,  name: "Orbite" },
+  { min: 30,  name: "Solaire" },
+  { min: 60,  name: "Cristal" },
+  { min: 100, name: "Aurora" },
+];
+function levelFor(days) {
+  let lvl = 0;
+  LEVELS.forEach((L, i) => { if (days >= L.min) lvl = i; });
+  return lvl;
+}
+
 function paint() {
   const sec = elapsed();
   const days = Math.floor(sec / 86400);
@@ -29,9 +45,16 @@ function paint() {
     ? new Date(state.started_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })
     : "—";
 
-  // anime la sphère un peu plus vite à mesure que la streak grandit
-  const sphere = document.querySelector(".sphere-core");
-  if (sphere) sphere.style.animationDuration = `${Math.max(3, 6 - days * 0.05)}s`;
+  // évolution de la sphère selon le palier atteint
+  const sphere = document.getElementById("sphere");
+  const badge = document.getElementById("sphereBadge");
+  const lvl = levelFor(days);
+  if (sphere) sphere.className = `sphere lvl-${lvl}`;
+  if (badge) {
+    const next = LEVELS[lvl + 1];
+    badge.textContent = `Niv. ${lvl} · ${LEVELS[lvl].name}` +
+      (next ? `  →  ${next.min - days}j` : "  ·  max");
+  }
 }
 
 function startTicker() {
