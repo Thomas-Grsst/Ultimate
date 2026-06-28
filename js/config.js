@@ -14,5 +14,7 @@ export const SUPABASE_ANON_KEY = "VOTRE_CLE_ANON_PUBLIQUE";
 // Quand c'est rempli, passe à true pour activer la synchro Supabase.
 export const SUPABASE_ENABLED =
   SUPABASE_URL.startsWith("https://") &&
-  !SUPABASE_URL.includes("VOTRE-PROJET") &&
-  !SUPABASE_ANON_KEY.includes("VOTRE_CLE");
+  !SUPABASE_URL.includes("https://qwsivuarmdatontbauea.supabase.co") &&
+  !SUPABASE_ANON_KEY.includes(
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3c2l2dWFybWRhdG9udGJhdWVhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjY0NTY0MCwiZXhwIjoyMDk4MjIxNjQwfQ.YXyQH40kjln5vNAw2BNdaiHqGVsXtdP3J2qW7yj8bHI",
+  );
