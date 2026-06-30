@@ -27,7 +27,8 @@ body {
   color: var(--txt);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 84px; /* place pour la tabbar */
+  /* dégagement sous le contenu pour ne pas passer sous la barre fixe */
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
   min-height: 100%;
 }
 
@@ -98,7 +99,14 @@ main { max-width: 720px; margin: 0 auto; padding: 18px; }
   color: var(--accent-2); margin-bottom: 8px; font-weight: 700;
 }
 .feed-card .fc-title { font-size: 1.05rem; font-weight: 700; line-height: 1.35; margin: 0; }
-.feed-card .fc-desc { margin-top: 8px; font-size: 0.92rem; line-height: 1.5; color: #c7c7d6; }
+.feed-card .fc-desc { margin-top: 8px; font-size: 0.92rem; line-height: 1.55; color: #c7c7d6; white-space: pre-line; }
+.feed-card .fc-desc.clamp {
+  display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;
+}
+.feed-card .fc-more {
+  margin-top: 8px; background: transparent; border: none; color: var(--accent-2);
+  font-size: 0.82rem; font-weight: 600; padding: 2px 0; cursor: pointer;
+}
 .feed-card .fc-meta { margin-top: 10px; font-size: 0.78rem; color: var(--muted); }
 .feed-empty, .loading { text-align: center; color: var(--muted); padding: 40px 0; }
 .skeleton {
@@ -143,6 +151,16 @@ main { max-width: 720px; margin: 0 auto; padding: 18px; }
   background: var(--card-2); color: var(--accent-2); border: 1px solid var(--line);
   width: 40px; border-radius: 10px; font-size: 1.2rem;
 }
+
+/* ---------- Navigation des semaines ---------- */
+.week-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.week-arrow {
+  width: 40px; height: 40px; border-radius: 12px; flex: none;
+  background: var(--card); border: 1px solid var(--line); color: var(--txt); font-size: 0.9rem; transition: 0.15s;
+}
+.week-arrow:hover:not(:disabled) { border-color: var(--accent); color: #fff; }
+.week-arrow:disabled { opacity: 0.35; cursor: default; }
+.week-label { flex: 1; text-align: center; font-weight: 600; font-size: 0.92rem; color: var(--txt); }
 
 /* ---------- Matrice de tâches ---------- */
 .matrix {
@@ -220,6 +238,29 @@ main { max-width: 720px; margin: 0 auto; padding: 18px; }
 }
 
 /* ---------- Streak ---------- */
+/* Deux compteurs côte à côte */
+.streaks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.streak-unit {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px 12px; box-shadow: var(--shadow);
+}
+.streak-title { font-weight: 700; font-size: 1.05rem; letter-spacing: 0.3px; }
+.streak-unit .sphere { width: 180px; height: 180px; }
+.streak-unit .sphere-core { width: 140px; height: 140px; }
+.streak-unit .streak-days { font-size: 2.4rem; }
+.streak-unit .sphere-orbit span:nth-child(1) { transform: rotate(0deg) translateX(92px); }
+.streak-unit .sphere-orbit span:nth-child(2) { transform: rotate(90deg) translateX(92px); }
+.streak-unit .sphere-orbit span:nth-child(3) { transform: rotate(180deg) translateX(92px); }
+.streak-unit .sphere-orbit span:nth-child(4) { transform: rotate(270deg) translateX(92px); }
+.streak-unit .streak-timer { font-size: 0.92rem; }
+.streak-unit .btn-danger { width: 100%; padding: 10px; font-size: 0.85rem; }
+@media (max-width: 460px) {
+  .streaks-grid { grid-template-columns: 1fr; }
+  .streak-unit .sphere { width: 200px; height: 200px; }
+  .streak-unit .sphere-core { width: 160px; height: 160px; }
+}
+
 .streak-wrap { display: flex; flex-direction: column; align-items: center; gap: 22px; padding-top: 10px; }
 /* La sphère évolue selon le niveau (lvl-0 … lvl-6) via ces variables */
 .sphere {
@@ -342,9 +383,10 @@ main { max-width: 720px; margin: 0 auto; padding: 18px; }
 }
 .tab {
   background: transparent; color: var(--muted); display: flex; flex-direction: column;
-  align-items: center; gap: 3px; font-size: 0.68rem; padding: 6px 14px; border-radius: 12px; transition: 0.15s;
+  align-items: center; gap: 3px; font-size: 0.64rem; padding: 6px 8px; border-radius: 12px;
+  transition: 0.15s; flex: 1; min-width: 0;
 }
-.tab .ico { font-size: 1.15rem; }
+.tab .ico { font-size: 1.1rem; }
 .tab.is-active { color: var(--accent-2); }
 
 /* ---------- Modale ---------- */

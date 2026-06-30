@@ -47,7 +47,7 @@ function tag(block, name) {
   return m ? decode(m[1]) : "";
 }
 const norm = (s = "") => s.toLowerCase().replace(/[^a-z0-9àâäéèêëïîôöùûüç ]/gi, "").replace(/\s+/g, " ").trim();
-const clip = (s, n = 700) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
+const clip = (s, n = 4000) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
 
 function descOf(block, title) {
   // on choisit le champ le plus riche disponible (contenu complet > résumé court)
@@ -64,6 +64,12 @@ function descOf(block, title) {
   if (nd === nt || nt.includes(nd) || (nt && nd.startsWith(nt.slice(0, 40)))) return "";
   return clip(d);
 }
+function linkOf(block) {
+  let m = block.match(/<link[^>]*>([\s\S]*?)<\/link>/i);
+  if (m && m[1].trim()) return decode(m[1]);
+  m = block.match(/<link[^>]*href="([^"]+)"/i);
+  return m ? m[1] : "";
+}
 function parse(xml, category, source) {
   const items = [];
   const blocks = xml.match(/<(item|entry)[\s\S]*?<\/(item|entry)>/gi) || [];
@@ -74,6 +80,7 @@ function parse(xml, category, source) {
     items.push({
       title,
       description: descOf(b, title),
+      link: linkOf(b),
       source,
       date: dateRaw ? new Date(dateRaw).toISOString() : null,
       category,

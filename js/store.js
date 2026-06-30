@@ -36,7 +36,8 @@ export async function listTasks() {
 }
 
 export async function addTask({ title, position }) {
-  const checks = [false, false, false, false, false, false, false];
+  // checks = map { "YYYY-MM-DD" (lundi) : [7 booléens] } -> remise à zéro chaque semaine
+  const checks = {};
   if (useCloud()) {
     const { data, error } = await supabase
       .from("tasks")
@@ -74,28 +75,31 @@ export async function deleteTask(id) {
 // ============================================================
 //  STREAK
 // ============================================================
-export async function getStreak() {
+// kind : 'porn' | 'insta' (un compteur distinct par type)
+export async function getStreak(kind) {
   if (useCloud()) {
     const { data, error } = await supabase
-      .from("streaks").select("*").eq("user_id", currentUser.id).maybeSingle();
+      .from("streaks").select("*")
+      .eq("user_id", currentUser.id).eq("kind", kind).maybeSingle();
     if (error) throw error;
     return data; // peut être null
   }
-  return lsGet("ult_streak", null);
+  return lsGet(`ult_streak_${kind}`, null);
 }
 
-export async function saveStreak({ started_at, best_seconds }) {
+export async function saveStreak(kind, { started_at, best_seconds }) {
   if (useCloud()) {
     const { error } = await supabase.from("streaks").upsert({
       user_id: currentUser.id,
+      kind,
       started_at,
       best_seconds,
       updated_at: new Date().toISOString(),
-    });
+    }, { onConflict: "user_id,kind" });
     if (error) throw error;
     return;
   }
-  lsSet("ult_streak", { started_at, best_seconds });
+  lsSet(`ult_streak_${kind}`, { started_at, best_seconds });
 }
 
 // ============================================================

@@ -9,8 +9,8 @@ create table if not exists public.tasks (
   user_id    uuid not null references auth.users (id) on delete cascade,
   title      text not null,
   position   int not null default 0,
-  -- 7 booléens : index 0 = Lundi ... 6 = Dimanche
-  checks     jsonb not null default '[false,false,false,false,false,false,false]'::jsonb,
+  -- map { "YYYY-MM-DD" (lundi) : [7 booléens] } -> remise à zéro chaque semaine
+  checks     jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
 
@@ -25,12 +25,14 @@ create table if not exists public.goals (
   created_at timestamptz not null default now()
 );
 
--- ---------- STREAK ----------
+-- ---------- STREAKS (deux compteurs par utilisateur : porn / insta) ----------
 create table if not exists public.streaks (
-  user_id      uuid primary key references auth.users (id) on delete cascade,
+  user_id      uuid not null references auth.users (id) on delete cascade,
+  kind         text not null check (kind in ('porn','insta')),
   started_at   timestamptz not null default now(),
   best_seconds bigint not null default 0,
-  updated_at   timestamptz not null default now()
+  updated_at   timestamptz not null default now(),
+  primary key (user_id, kind)
 );
 
 -- ---------- MUSCU ----------
